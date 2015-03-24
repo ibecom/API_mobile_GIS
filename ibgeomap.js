@@ -359,7 +359,7 @@ window.onload = function () {
             this._startPoint.on('click', function(e){
                 if (typeof JSInterface !== 'undefined') {
                     try {
-                        JSInterface.mapLongTap(JSON.stringify(this.options.feature));
+                        JSInterface.mapClick(JSON.stringify(this.options.feature));
                     } catch (e) {
                         console.log(e);
                     }
@@ -389,7 +389,7 @@ window.onload = function () {
             this._endPoint.on('click', function(e){
                 if (typeof JSInterface !== 'undefined') {
                     try {
-                        JSInterface.mapLongTap(JSON.stringify(this.options.feature));
+                        JSInterface.mapClick(JSON.stringify(this.options.feature));
                     } catch (e) {
                         console.log(e);
                     }
@@ -547,7 +547,7 @@ window.onload = function () {
             };
             if (typeof JSInterface !== 'undefined') {
                 try {
-                    JSInterface.mapLongTap(JSON.stringify(result));
+                    JSInterface.mapClick(JSON.stringify(result));
                 } catch (e) {
                     console.log(e);
                 }
