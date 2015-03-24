@@ -1,0 +1,234 @@
+html,
+body {
+    padding: 0;
+    margin: 0;
+    height: 100%;
+    -webkit-tap-highlight-color: rgba(255, 255, 255, 0);
+    -webkit-tap-highlight-color: transparent;
+}
+
+#map {
+    background-color: #E9E5DC;
+    height: 100%;
+}
+
+#controls {
+    height: 20%;
+}
+
+.ibecom-control {
+    margin:0 0 0 0;
+}
+
+.ibecom-control-icon {
+    float:right;
+    margin:0 0 0 0;
+}
+
+.ibecom-control-levels {
+    display: none;
+    margin-right: 2px;
+    background-color: #ffffff;
+    border-left: 1px solid white;
+    border-right: 1px solid white;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+    float:left;
+}
+
+.ibecom-level-button-container-passive {
+    border-left: 2px solid #0491b2;
+    border-right: 2px solid #0491b2;
+    border-top: 1px solid #0491b2;;
+    border-bottom: 1px solid #0491b2;
+    margin-top: 1px;
+    margin-bottom: 1px;
+    background-color: #0491b2;
+    color: #ffffff;
+}
+
+.ibecom-level-button-container-active {
+    border-left: 2px solid #dd4747;
+    border-right: 2px solid #dd4747;
+    border-top: 1px solid #dd4747;
+    border-bottom: 1px solid #dd4747;
+    margin-top: 1px;
+    margin-bottom: 1px;
+    background-color: #dd4747;
+    color: #ffffff;
+}
+
+a.ibecom-level-button-text {
+    display: block;
+    font: 23px Arial, Helvetica, sans-serif;
+    margin:  5px 25px 5px 25px;
+    color: #ffffff;
+}
+
+.area-label {
+    font: 13px Arial, Helvetica, sans-serif;
+    color: #494340;
+    font-weight: bold;
+}
+
+path.poizone {
+    stroke-linejoin: round;
+}
+
+.vertical{
+    writing-mode:tb-rl;
+    -webkit-transform:rotate(90deg);
+    -moz-transform:rotate(90deg);
+    -o-transform: rotate(90deg);
+    -ms-transform:rotate(90deg);
+    white-space:nowrap;
+    display:block;
+    bottom:0;
+    width:20px;
+    height:20px;
+}
+
+.info {
+    width: 150px;
+    padding: 6px 8px;
+    font: 14px/16px Arial, Helvetica, sans-serif;
+    background: white;
+    background: rgba(255, 255, 255, 1);
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+    border-radius: 5px;
+}
+
+.leaflet-popup-tip {
+    display: none;
+}
+
+.leaflet-bar {
+    box-shadow: none;
+    border: none;
+    outline: none;
+}
+.leaflet-touch .leaflet-bar {
+    border: none;
+    outline: none;
+}
+
+.leaflet-touch .leaflet-bar a {
+    width: 40px;
+    height: 40px;
+    line-height: 40px;
+}
+
+
+.leaflet-bar a:first-child {
+    border-top-left-radius: 0px;
+    border-top-right-radius: 0px;
+}
+.leaflet-bar a:last-child {
+    border-bottom-left-radius: 0px;
+    border-bottom-right-radius: 0px;
+    border-bottom: none;
+}
+
+.leaflet-container a.leaflet-active {
+    outline: none;
+}
+
+.leaflet-center {
+    position: absolute;
+    top: 40%;
+    left: 50%;
+}
+
+.leaflet-control-zoom-out {
+    margin-top: 30px;
+}
+.leaflet-bar a, .leaflet-bar a:hover {
+    width: 40px;
+    height: 40px;
+    line-height: 40px;
+    border: none;
+    box-shadow: 0 3px 14px rgba(0,0,0,0.4);
+}
+
+
+.leaflet-popup-content-wrapper {
+    position: relative;
+    background: linear-gradient(to bottom, #00CAC6, #01A2BF);
+    border: 0px solid #FFFFFF;
+    border-radius: 2px;
+    color: #ffffff;
+}
+
+.leaflet-popup-content-wrapper:after, .leaflet-popup-content-wrapper:before {
+    top: 100%;
+    left: 50%;
+    border: solid transparent;
+    content: " ";
+    height: 0;
+    width: 0;
+    position: absolute;
+    pointer-events: none;
+}
+
+.leaflet-popup-content-wrapper:after {
+    border-color: rgba(136, 183, 213, 0);
+    border-top-color: #01A2BF;
+    border-width: 10px;
+    margin-left: -10px;
+}
+.leaflet-popup-content-wrapper:before {
+    border-color: rgba(194, 225, 245, 0);
+    border-top-color: #FFFFFF;
+    border-width: 1px;
+    margin-left: -1px;
+}
+
+.blink {
+    -webkit-animation-name: blinker;
+    -webkit-animation-duration: 1s;
+    -webkit-animation-timing-function: linear;
+    -webkit-animation-iteration-count: infinite;
+
+    -moz-animation-name: blinker;
+    -moz-animation-duration: 1s;
+    -moz-animation-timing-function: linear;
+    -moz-animation-iteration-count: infinite;
+
+    animation-name: blinker;
+    animation-duration: 1s;
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+}
+
+@-moz-keyframes blinker {
+    0% { opacity: 1.0; }
+    50% { opacity: 0.0; }
+    100% { opacity: 1.0; }
+}
+
+@-webkit-keyframes blinker {
+    0% { opacity: 1.0; }
+    50% { opacity: 0.0; }
+    100% { opacity: 1.0; }
+}
+
+@keyframes blinker {
+    0% { opacity: 1.0; }
+    50% { opacity: 0.0; }
+    100% { opacity: 1.0; }
+}
+
+.end-route-arrow {
+
+}
+
+.noselect {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    outline: 0;
+    -webkit-tap-highlight-color: rgba(255, 255, 255, 0);
+    -webkit-tap-highlight-color: transparent;
+}
