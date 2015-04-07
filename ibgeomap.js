@@ -184,9 +184,33 @@ window.onload = function () {
                     return 1;
                 return 0;
             }
-
             nodes.sort(compare);
-            return nodes[0];
+            var pointS = {
+                id: nodes[0].id, // В качестве идентификатора точки на графе отдаём Id ближайшей вершины. Необходимо для рассчёта маршрута.
+                x: 0,
+                y: 0
+            }
+            var pointA = {};
+            pointA.x = parseFloat(nodes[1].x);
+            pointA.y = parseFloat(nodes[1].y);
+            var pointB = {};
+            pointB.x = parseFloat(nodes[0].x);
+            pointB.y = parseFloat(nodes[0].y);
+            var pointC = {};
+            pointC.x = point.lng;
+            pointC.y = point.lat;
+
+            if (pointC.x === pointA.x && pointC.y === pointA.y) {
+                return pointA;
+            }
+            if (pointC.x === pointB.x && pointC.y === pointB.y) {
+                return pointB;
+            }
+
+            pointS.x = pointA.x + (pointB.x - pointA.x)*(((pointC.x-pointA.x)*(pointB.x-pointA.x)+(pointC.y-pointA.y)*(pointB.y-pointA.y))/((pointB.x-pointA.x)*(pointB.x-pointA.x)+(pointB.y-pointA.y)*(pointB.y-pointA.y)));
+            pointS.y = pointA.y + (pointB.y-pointA.y)*(((pointC.x-pointA.x)*(pointB.x-pointA.x)+(pointC.y-pointA.y)*(pointB.y-pointA.y))/((pointB.x-pointA.x)*(pointB.x-pointA.x)+(pointB.y-pointA.y)*(pointB.y-pointA.y)));
+
+            return pointS;
         };
 
         this._getNeighbors = function (node_id, graph) { //Поиск соседних точек к заданной
@@ -638,9 +662,10 @@ window.onload = function () {
                     var text = feature.properties.tags.description;
                     var textProp = getTextWidth(text, '16px Arial');
 
-                    if (!featureLevel) {
+                    if (!featureLevel || !featureLevel.value) {
                         return;
                     }
+                    var levelNum = featureLevel.value;
 
                     var iconOptions = {
                         className: 'area-label'
@@ -666,14 +691,14 @@ window.onload = function () {
                         self._defaultOnClick(e, feature);
                     });
 
-                    if (!self._layers.labels[featureLevel]) {
-                        self._layers.labels[featureLevel] = L.featureGroup();
+                    if (!self._layers.labels[levelNum]) {
+                        self._layers.labels[levelNum] = L.featureGroup();
                     }
 
-                    self._layers.labels[featureLevel].addLayer(labelMarker);
+                    self._layers.labels[levelNum].addLayer(labelMarker);
 
                     if (currentZoom >= self.options.labelHideZoom) {
-                        self.indoorLayer.addLayer(labelMarker, featureLevel);
+                        self.indoorLayer.addLayer(labelMarker, levelNum);
                     }
 
 
@@ -780,24 +805,23 @@ window.onload = function () {
 
                 this.levelControl.addEventListener("levelchange", this.indoorLayer.setLevel, this.indoorLayer);
 
+                this.levelControl.on('levelchange', function(evt){
+                    if (typeof JSInterface !== 'undefined') {
+                        try {
+                            JSInterface.setFloor(evt.newLevelLabel);
+                        } catch (e) {
+                            console.log(e);
+                        }
+                    } else {
+                        console.log(evt.newLevelLabel);
+                    }
+                });
+
                 this.levelControl.addTo(this._map);
             }
 
             this.zommControl = L.control.zoom({position:"centerright"});
             this.zommControl.addTo(this._map);
-
-            /*var width = document.documentElement.clientWidth;
-            var height = document.documentElement.clientHeight;
-            console.log(this._map.getZoomScale(19,22),width, height);*/
-            // tablets are between 768 and 922 pixels wide
-            // phones are less than 768 pixels wide
-            /*if (width < 768) {
-                // set the zoom level to 10
-                this._map.setZoom(10);
-            }  else {
-                // set the zoom level to 8
-                this._map.setZoom(8);
-            }*/
 
             this.indoorLayer.fitToBounds();
             if (typeof (callback) === 'function') {
@@ -849,8 +873,7 @@ window.onload = function () {
 
             terminal.setLatLng(latlng);
             terminal.setPopupContent('You are here: x:' + x + ' y:' + y + ' l:' + level);
-
-            if (terminal.getLevel() !== parseInt(level) && this.indoorLayer.getLevel() !== parseInt(level)) {
+            if (terminal.getLevel() !== parseInt(level) || this.indoorLayer.getLevel() !== parseInt(level)) {
                 terminal.setLevel(level);
                 if (this.levelControl) {
                     this.levelControl.setLevel(level);
@@ -877,7 +900,8 @@ window.onload = function () {
             return true;
         };
 
-        this.drawRouteLayer = function (GeoJSONData) {
+        this.drawPossibleRoutes = function (GeoJSONData) {
+
             this._layers.possibleroutes = this.indoorLayer.addData(GeoJSONData, {
                 color: '#00A707',
                 weight: 1,
@@ -890,8 +914,18 @@ window.onload = function () {
             });
         };
 
-        this.clearRouteLayer = function () {
+        this.clearPossibleRoutes = function () {
+            var levels = this.indoorLayer.getLevels();
+            var ctx = this;
+            for (var level in levels) {
+                this._layers.possibleroutes.forEach(function(layer){
+                    ctx.indoorLayer.removeLayer(layer, levels[level]);
+                });
+            }
+            this._layers.possibleroutes = [];
+        };
 
+        this.clearRouteLayer = function () {
             if (this._route) {
                 var levels = Object.keys(this._route);
                 for (var level in levels) {
@@ -965,7 +999,7 @@ window.onload = function () {
                     this._route[levels[level]].addLayer(polyline);
                 }
 
-                this.indoorLayer.addLayer(this._route[levels[level]], levels[level]);
+                this.indoorLayer.addLayer(this._route[levels[level]], levels[level].value);
             }
 
             if (arrowMarker) {
@@ -1067,11 +1101,11 @@ window.onload = function () {
 
     /*--------------------------------------Интерфейсные функции для мобильных приложений----------------------------------*/
 
-    window.onTerminalPositionChange = function (x, y, l) { //Функция перемещения маркера терминала на карте
+    window.onTerminalPositionChange = function (x, y, l, ignoreRoutes) { //Функция перемещения маркера терминала на карте
         var recalculatedX = x,
             recalculatedY = y;
-
-        if (ibgeoroute && ibgeoroute.isReady()){
+        var ignoreAproximation = (ignoreRoutes && (ignoreRoutes === true || ignoreRoutes == 'true')) ? true : false;
+        if (ibgeoroute && ibgeoroute.isReady() && !ignoreAproximation){
             var from = L.Projection.Mercator.unproject({x: x, y: y});
             var f_point = ibgeoroute._getClosestPoint(from, l);
             var closetpointCoords = L.Projection.Mercator.project({lat:f_point.y,lng:f_point.x});
@@ -1127,11 +1161,17 @@ window.onload = function () {
         window.ibgeoroute.init(window.indoorRouteGraph);
     };
 
-    window.higlightRoutes = function (routesGeoJSON) { //Функция подсветки всех возможных маршрутов
+    window.drawPossibleRoutes = function (routesGeoJSON) { //Функция подсветки всех возможных маршрутов
         var r = paramsToObj(routesGeoJSON);
 
-        ibgeomap.drawRouteLayer(r);
+        ibgeomap.drawPossibleRoutes(r);
     };
+
+    window.clearPossibleRoutes = function () { //Функция подсветки всех возможных маршрутов
+
+        ibgeomap.clearPossibleRoutes();
+    };
+
 
     window.findRoute = function (fromPoint, toPoint, lineStyle) { //Функция поиска и отрисовки маршрута из точики from в точку to
         if (!window.indoorRouteGraph.loaded) {

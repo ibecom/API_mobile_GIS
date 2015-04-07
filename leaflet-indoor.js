@@ -107,12 +107,12 @@ L.Indoor = L.Layer.extend({
         features.forEach(function(part) {
 
             var levelInfo = options.getFeatureLevel(part);
-            var level = levelInfo.value;
-
             var layer;
 
-            if (typeof level === 'undefined' ||  level === null)
+            if (typeof levelInfo === 'undefined' ||  levelInfo === null || levelInfo.value === 'undefined' || levelInfo.value === null)
                 return;
+
+            var level = levelInfo.value;
 
             if (!("geometry" in part)) {
                 return;
@@ -142,7 +142,7 @@ L.Indoor = L.Layer.extend({
                     }, options);
                 }
 
-                var l = L.geoJson(part,options);
+                var l = L.geoJson(part, options);
                 if (part.properties.tags.backgroundImage) {
                     var bg = L.imageOverlay(part.properties.tags.backgroundImage, l.getBounds());
                     layer.addLayer(bg);
@@ -248,6 +248,7 @@ L.Indoor = L.Layer.extend({
         if (typeof(layer) !== 'object') {
             return;
         }
+
         var destLevel = (level !== null) ? level : this._level;
         this._layers[destLevel].addLayer(layer);
     },
@@ -342,6 +343,7 @@ L.Control.Level = L.Control.extend({
         this._buttons = {};
         this._listeners = [];
         this._level = options.level;
+        this._levelLabels = {};
 
         this.addEventListener("levelchange", this._levelChange, this);
     },
@@ -353,21 +355,15 @@ L.Control.Level = L.Control.extend({
         var activeLevel = this._level;
         var self = this;
 
-        var levels = [];
+        var levels = this._levelLabels;
+        var labels = this.options.labels;
 
-        for (var i = 0; i < this.options.levels.length; i++) {
-            var level = this.options.levels[i];
+        this.options.levels.forEach(function(levelNumber){
+            var level = self.options.parseLevel(levelNumber);
 
-            var levelNum = self.options.parseLevel(level);
-
-            levels.push({
-                num: levelNum,
-                label: this.options.labels[level] || level
-            });
-        }
-
-        levels.sort(function(a, b) {
-            return b.num - a.num;
+            levels[level] = {
+                label: labels[level] || level
+            };
         });
 
         var levelDiv = L.DomUtil.create('div', 'ibecom-control-levels');
@@ -380,36 +376,33 @@ L.Control.Level = L.Control.extend({
             e.stopPropagation();
         };
 
-        for (i = levels.length - 1; i >= 0; i--) {
-            var level = levels[i].num;
-            var originalLevel = levels[i].label;
+        var levelNumbers = Object.keys(levels);
+
+        levelNumbers.sort(function (a, b) {
+            return b.num - a.num;
+        });
+
+        levelNumbers.forEach(function(levelNumber){
+            var levelLabel = levels[levelNumber].label;
 
             var btnClass =  'ibecom-level-button-container-passive';
-            if (level == activeLevel) {
+            if (levelNumber == activeLevel) {
                 btnClass = 'ibecom-level-button-container-active';
             }
 
             var levelBtn = L.DomUtil.create('div', btnClass, levelDiv);
 
-            levelBtn.innerHTML = "<a class=\"ibecom-level-button-text noselect\">"+originalLevel+"</a>";
+            levelBtn.innerHTML = "<a class=\"ibecom-level-button-text noselect\">"+levelLabel+"</a>";
 
-            (function(level) {
+            (function(level, label) {
                 levelBtn.onclick = function(e) {
                     self.setLevel(level);
-                    if (typeof JSInterface !== 'undefined') {
-                        try {
-                            JSInterface.setFloor(level);
-                        } catch (e) {
-                            console.log(e);
-                        }
-                    } else {
-                        console.log(level);
-                    }
+                    $(levelDiv).hide();
                 };
-            })(level);
+            })(levelNumber, levelLabel);
 
-            buttons[level] = levelBtn;
-        }
+            buttons[levelNumber] = levelBtn;
+        });
 
         div.appendChild(levelDiv);
         div.appendChild(iconDiv);
@@ -432,7 +425,8 @@ L.Control.Level = L.Control.extend({
 
         this.fireEvent("levelchange", {
             oldLevel: oldLevel,
-            newLevel: level
+            newLevel: level,
+            newLevelLabel: this._levelLabels[level].label
         });
     },
     getLevel: function() {
