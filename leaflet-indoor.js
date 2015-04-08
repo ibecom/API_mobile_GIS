@@ -362,7 +362,7 @@ L.Control.Level = L.Control.extend({
             var level = self.options.parseLevel(levelNumber);
 
             levels[level] = {
-                label: labels[level] || level
+                label: (labels && labels[level])? labels[level] : level
             };
         });
 
@@ -423,7 +423,7 @@ L.Control.Level = L.Control.extend({
         var oldLevel = this._level;
         this._level = level;
 
-        this.fireEvent("levelchange", {
+        this.fireEvent('levelchange', {
             oldLevel: oldLevel,
             newLevel: level,
             newLevelLabel: this._levelLabels[level].label

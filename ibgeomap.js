@@ -705,6 +705,31 @@ window.onload = function () {
             }
         };
 
+        this._initLevelControl = function (levels) {
+            this.levelControl = new L.Control.Level({
+                level: levels[0],
+                levels: levels,
+                labels: this.indoorLayer.getLevelsNames(),
+                position: 'topright'
+            });
+
+            this.levelControl.addEventListener("levelchange", this.indoorLayer.setLevel, this.indoorLayer);
+
+            this.levelControl.on('levelchange', function (evt) {
+                if (typeof JSInterface !== 'undefined') {
+                    try {
+                        JSInterface.setFloor(evt.newLevelLabel);
+                    } catch (e) {
+                        console.log(e);
+                    }
+                } else {
+                    console.log(evt.newLevelLabel);
+                }
+            });
+
+            this.levelControl.addTo(this._map);
+        };
+
         this.init = function (CanvasData, POIData, callback) { //Конструктор объекта
 
             this.indoorLayer = new L.Indoor(CanvasData, {
@@ -795,29 +820,7 @@ window.onload = function () {
             this.indoorLayer.setLevel(levels[0]);
 
             if (levels.length > 1) {
-
-                this.levelControl = new L.Control.Level({
-                    level: levels[0],
-                    levels: levels,
-                    labels: this.indoorLayer.getLevelsNames(),
-                    position:'topright'
-                });
-
-                this.levelControl.addEventListener("levelchange", this.indoorLayer.setLevel, this.indoorLayer);
-
-                this.levelControl.on('levelchange', function(evt){
-                    if (typeof JSInterface !== 'undefined') {
-                        try {
-                            JSInterface.setFloor(evt.newLevelLabel);
-                        } catch (e) {
-                            console.log(e);
-                        }
-                    } else {
-                        console.log(evt.newLevelLabel);
-                    }
-                });
-
-                this.levelControl.addTo(this._map);
+                this._initLevelControl(levels);
             }
 
             this.zommControl = L.control.zoom({position:"centerright"});
@@ -836,15 +839,7 @@ window.onload = function () {
             this.indoorLayer.addData(CanvasData);
             var levels = this.indoorLayer.getLevels();
             if (levels.length > 1) {
-
-                this.levelControl = new L.Control.Level({
-                    level: levels[0],
-                    levels: levels
-                });
-
-                this.levelControl.addEventListener("levelchange", this.indoorLayer.setLevel, this.indoorLayer);
-
-                this.levelControl.addTo(this._map);
+                this._initLevelControl(levels);
             }
         };
 
@@ -942,6 +937,7 @@ window.onload = function () {
 
         this.drawRoute = function (routePath, style) { //Функция отрисовки нитки маршрута на карте
             var levels;
+            var ctx = this;
             var routeArrLength = routePath.length;
 
             this.clearRouteLayer();
@@ -991,16 +987,16 @@ window.onload = function () {
                 arrowMarker.setLevel(l);
             }
             levels = Object.keys(points);
-            for (var level in levels) {
-                this._route[levels[level]] = L.featureGroup();
+            levels.forEach(function(level){
+                ctx._route[level] = L.featureGroup();
 
-                if (points[levels[level]]) {
-                    var polyline = L.polyline(points[levels[level]],style);
-                    this._route[levels[level]].addLayer(polyline);
+                if (points[level]) {
+                    var polyline = L.polyline(points[level],style);
+                    ctx._route[level].addLayer(polyline);
                 }
-
-                this.indoorLayer.addLayer(this._route[levels[level]], levels[level].value);
-            }
+                console.log(level);
+                ctx.indoorLayer.addLayer(ctx._route[level], level);
+            });
 
             if (arrowMarker) {
                 this._route[arrowMarker.getLevel()].addLayer(arrowMarker);
@@ -1088,10 +1084,10 @@ window.onload = function () {
     window.ibgeomap = new ibGeoMap({
         el: 'map',
         center: [0, 0],
-        labelHideZoom: 19,
-        minZoom: 19,
-        zoom: 20,
-        maxZoom: 22,
+        labelHideZoom: 21,
+        minZoom: 20,
+        zoom: 21,
+        maxZoom: 23,
         higlightablePOITag: 'area'
     });
 
